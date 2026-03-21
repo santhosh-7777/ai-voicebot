@@ -1,0 +1,29 @@
+# BERT model (too large for GitHub - 235MB)
+models/voicebot_bert/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+env/
+
+# Output audio files
+outputs/
+
+# Test files
+tests/*.mp3
+
+# Temp files
+test_wer.py
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
