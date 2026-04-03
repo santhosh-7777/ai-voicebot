@@ -21,7 +21,9 @@ app.add_middleware(
 )
 
 templates = Jinja2Templates(directory="app/templates")
+os.makedirs("outputs", exist_ok=True)
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+os.makedirs("tests", exist_ok=True)
 
 asr = WhisperASR()
 clf = IntentClassifier()
