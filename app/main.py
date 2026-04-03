@@ -1,6 +1,8 @@
-from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, UploadFile, File, Request
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from app.asr.whisper_asr import WhisperASR
 from app.nlp.intent_classifier import IntentClassifier
 from app.nlp.response_generator import generate_response
@@ -18,13 +20,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+templates = Jinja2Templates(directory="app/templates")
+app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+
 asr = WhisperASR()
 clf = IntentClassifier()
 tts = TTSEngine()
 
-@app.get("/")
-def root():
-    return {"message": "Voice Bot API is running!"}
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/transcribe")
 async def transcribe(file: UploadFile = File(...)):
@@ -51,7 +56,7 @@ def synthesize(data: dict):
     result = tts.synthesize(text)
     if result.get("audio_path"):
         return FileResponse(result["audio_path"], media_type="audio/mpeg")
-    return {"error": "TTS failed - check internet connection"}
+    return {"error": "TTS failed"}
 
 @app.post("/voicebot")
 async def voicebot(file: UploadFile = File(...)):
@@ -69,5 +74,5 @@ async def voicebot(file: UploadFile = File(...)):
         "confidence": intent_result["confidence"],
         "response": response["response"],
         "audio_path": audio.get("audio_path"),
-        "tts_status": "success" if audio.get("audio_path") else "failed - no internet"
+        "tts_status": "success" if audio.get("audio_path") else "failed"
     }
